@@ -1,0 +1,15 @@
+source: sakila_duck
+target: sakila_postgres
+
+defaults:
+  object: stg.{stream_table}
+  mode: full-refresh
+
+streams:
+  main.film:
+
+  main.actor:
+
+  main.rental:
+env:
+  SLING_THREADS: 3
