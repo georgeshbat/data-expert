@@ -11,5 +11,10 @@ streams:
   main.actor:
 
   main.rental:
+    mode: incremental
+    primary_key: [rental_id]
+    update_key: last_update
+
 env:
-  SLING_THREADS: 3
+    SLING_EXEC_ID_COLUMN: true
+
