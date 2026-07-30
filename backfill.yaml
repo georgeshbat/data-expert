@@ -1,0 +1,29 @@
+source: sakila_duck
+
+target: sakila_postgres
+
+defaults:
+
+  object: 'stg.{stream_table}'
+
+streams:
+
+  main.rental:
+
+    object: stg.rental_backfill
+
+    mode: backfill
+
+    primary_key: [rental_id]
+
+    update_key: rental_date
+
+    source_options:
+
+      range: '2022-01-01,2022-01-04'
+
+
+
+env:
+
+  SLING_THREADS: 1
