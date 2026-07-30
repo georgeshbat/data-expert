@@ -1,0 +1,7 @@
+
+def main():
+    print("Hello from data-expert-course!")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,28 @@
+version = 1
+revision = 3
+requires-python = ">=3.14"
+resolution-markers = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'emscripten'",
+    "sys_platform != 'emscripten' and sys_platform != 'win32'",
+]
+
+[[package]]
+name = "data-expert-course"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "sling" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sling", specifier = ">=1.5.22" }]
+
+[[package]]
+name = "sling"
+version = "1.5.22"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/4e/b30baaf5c4d950bcfba488a00996bb18efb18538f592579f30c9debc03b2/sling-1.5.22.tar.gz", hash = "sha256:713e2a0b0898a9da5880b97c3c43845624c5428267c139f0c42e276f6d19ba61", size = 69574, upload-time = "2026-07-26T23:22:40.899Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/42/03/ad57770e390514dbd7fd617522fd2ad419c2c0009da94cb39e52020cfcd4/sling-1.5.22-py3-none-any.whl", hash = "sha256:eeca5260aed802d2f072966fc0ff9653b4711c3a1a17a2fbcfd3563471be3219", size = 36822, upload-time = "2026-07-26T23:22:39.677Z" },
+]
