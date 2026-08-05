@@ -1,0 +1,34 @@
+source: sakila_duck
+target: sakila_postgres
+
+defaults:
+  object: 'stg.{stream_table}'
+  mode: full-refresh
+
+streams:
+  main.film:
+    object: 'stg.film_columns'
+    select: [film_id, title, description, release_year]
+
+  main.customer:
+    object: 'stg.customer_columns'
+    select: [-email]
+    columns:
+      first_name: string(255)
+      last_name: string(255)
+
+  main.rental:
+    object: 'stg.rental_columns'
+    mode: incremental
+    select: [rental_id, rental_date, inventory_id, customer_id, return_date, staff_id, last_update]
+    primary_key: [rental_id]
+    update_key: last_update
+    sql: |
+      select {fields},{run_timestamp} as run_time 
+      from {stream_table} 
+      where last_update > COALESCE({incremental_value}::TIMESTAMP, TIMESTAMP '1900-01-01')
+
+env:
+  SLING_THREADS: 1
+  #SLING_LOADED_AT_COLUMN: true #timestamp
+

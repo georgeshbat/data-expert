@@ -1,0 +1,41 @@
+source: sakila_duck
+target: sakila_postgres
+
+defaults:
+  object: 'stg.{stream_table}'
+  mode: full-refresh
+
+streams:
+  main.film:
+    mode: full-refresh
+    hooks:
+      post:
+        - type: check
+          check: |
+            (run.total_rows <= max_rows)
+          vars:
+            max_rows: 1500 #1500
+          on_failure: warn # (abort/warn/quiet/skip)
+
+  main.actor:
+    mode: truncate
+    hooks:
+      pre:
+      - type: query
+        id: freshness_check
+        connection: sakila_duck
+        query: |
+          SELECT epoch(MAX(last_update)) AS last_update_time
+          FROM main.actor
+      
+      - type: log
+        message: |
+          "last_update_time: { state.freshness_check.result }"
+
+      - type: check
+        check: |
+          state.freshness_check.result[0].last_update_time >= 
+          timestamp.unix - max_age_seconds
+        vars:
+          max_age_seconds: 3600  # 1 hour
+        on_failure: skip

@@ -1,0 +1,28 @@
+source: sakila_duck
+target: sakila_postgres
+
+defaults:
+  object: 'stg.{stream_table}_test'
+  mode: full-refresh
+  target_options:
+    column_casing: snake
+    add_new_columns: true
+    adjust_column_type: false
+ 
+ 
+streams:
+  main.film:
+    target_options:
+      table_keys:
+        primary: [film_id] 
+        index: [title]
+  
+  main.customer:
+    target_options:
+      table_keys:
+        index: [[first_name, last_name]]
+       
+
+env:
+  SLING_THREADS: 1
+
