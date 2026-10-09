@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_aircraft
+    description: "aircrafts tabel"
+    columns:
+      - name: aircraft_code
+        tests:
+          - not_null
+      - name: aircraft_code||'-'||seat_no
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_airport
+    description: "aiports tabel"
+    columns:
+      - name: airport_code
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_date
+    columns:
+        - name: date_dim_id
+          description: "The primary key for this table"
+          tests:
+              - unique
+              - not_null
+
+
+sources:
+  - name: stg
+    database: flights_demo
+    schema: stg
+    tables:
+      - name: aircrafts_data
+      - name: seats
+      - name: airports_data
