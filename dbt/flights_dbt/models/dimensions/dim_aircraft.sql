@@ -1,8 +1,14 @@
-{{config(post_hook="insert into {{this}} select -1, 'na','na', null,'na','na','na',null")}}
+{{ config(
+    indexes=[
+        {'columns': ['aircraft_code', 'seat_no'], 'unique': True}
+       ,{'columns': ['aircraft_code']}
+    ],
+    post_hook="insert into {{this}} (aircraft_code, model_english, model_russian, range_desc, seat_no, fare_conditions) values ('-1','NA','NA','NA','NA','NA')"
+) }}
 
 with aircrafts_data as(
   select a.*
-        ,'{{run_started_at.strftime("%Y-%m-%d %H:%M:%S")}}'::timestamp as dbt_run_time
+        ,{{ dbt_run_time() }} as dbt_run_time
   from {{source('stg','aircrafts_data')}} a
 )
 , seats as (
@@ -10,8 +16,8 @@ with aircrafts_data as(
   from {{source('stg','seats')}}
 )
 select ad.aircraft_code
-      ,replace((ad.model -> 'en')::varchar,'"','') as model_english
-      ,replace((ad.model -> 'ru')::varchar,'"','') as model_russian
+      ,{{ json_value('ad.model', 'en') }} as model_english
+      ,{{ json_value('ad.model', 'ru') }} as model_russian
   	  ,ad."range"
   	  ,case when ad."range" > 5600 then 'high' else 'low' end as range_desc
   	  ,s.seat_no

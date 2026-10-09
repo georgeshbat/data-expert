@@ -1,3 +1,4 @@
+{{ config(indexes=[{'columns': ['date_dim_id'], 'unique': True}]) }}
 
 with dates as (
 SELECT

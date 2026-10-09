@@ -3,39 +3,136 @@ version: 2
 
 models:
   - name: fact_flights
-    description: "flights tabel"
+    description: "Flights fact. One row per flight, with actual and expected duration"
     columns:
       - name: flight_id
         description: "The primary key for this table"
-        tests:
+        data_tests:
           - unique
           - not_null
+      - name: flight_no
+        description: "Flight number"
+      - name: date_key
+        description: "Scheduled departure date in format YYYYMMDD, key to dim_date"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_dim_id
+      - name: scheduled_departure
+        description: "Scheduled departure time"
+      - name: scheduled_arrival
+        description: "Scheduled arrival time"
+      - name: departure_airport
+        description: "Departure airport code, key to dim_airport (-1 when missing in the dimension)"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_airport')
+                field: airport_code
+      - name: arrival_airport
+        description: "Arrival airport code, key to dim_airport (-1 when missing in the dimension)"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_airport')
+                field: airport_code
+      - name: status
+        description: "Flight status"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Scheduled', 'On Time', 'Delayed', 'Departed', 'Arrived', 'Cancelled']
+      - name: aircraft_code
+        description: "Aircraft model code, key to dim_aircraft (-1 when missing in the dimension)"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_aircraft')
+                field: aircraft_code
+      - name: actual_departure
+        description: "Actual departure time, null if the flight did not depart yet"
+      - name: actual_arrival
+        description: "Actual arrival time, null if the flight did not arrive yet"
+      - name: flight_duration
+        description: "Actual flight duration in hours"
+      - name: flight_duration_expected
+        description: "Scheduled flight duration in hours"
+      - name: duration_expected_than_actual
+        description: "Was the expected duration longer, shorter or as expected compared to the actual duration. Null if the flight did not arrive yet"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['As Expected', 'Longer', 'Shorter']
+      - name: last_update
+        description: "Last update time of the row in the source, used for the incremental load"
+      - name: dbt_run_time
+        description: "Start time of the dbt run that loaded the row"
 
   - name: fact_tickets
-    description: "tickets, bookings tabel"
+    description: "Tickets fact. One row per ticket (tickets + bookings), with phone and email extracted from contact_data"
     columns:
       - name: ticket_no
         description: "The primary key for this table"
-        tests:
+        data_tests:
           - unique
           - not_null
+      - name: book_ref
+        description: "Booking number. One booking can include several tickets"
+        data_tests:
+          - not_null
+      - name: date_key
+        description: "Booking date in format YYYYMMDD, key to dim_date"
+      - name: book_date
+        description: "Booking date"
+      - name: total_amount
+        description: "Total amount of the whole booking"
+      - name: passenger_id
+        description: "Passenger identity document number"
+      - name: passenger_name
+        description: "Passenger name"
+      - name: phone
+        description: "Passenger phone, extracted from the contact_data json"
+      - name: email
+        description: "Passenger email, extracted from the contact_data json"
+      - name: last_update_tickets
+        description: "Last update time of the ticket in the source, used for the incremental load"
+      - name: dbt_run_time
+        description: "Start time of the dbt run that loaded the row"
 
   - name: fact_boarding_passes
-    description: "boarding passes, tickets_flights tabel"
+    description: "Boarding passes fact. One row per ticket and flight (ticket_flights + boarding_passes)"
     columns:
-      - name: ticket_no||'-'||flight_id
-        description: "The primary key for this table"
-        tests:
+      - name: boarding_pass_key
+        description: "The primary key for this table, surrogate key of ticket_no and flight_id"
+        data_tests:
           - unique
           - not_null
-
-sources:
-  - name: stg
-    database: flights_demo
-    schema: stg
-    tables:
-      - name: flights
-      - name: tickets
-      - name: bookings
-      - name: boarding_passes
-      - name: ticket_flights
+      - name: ticket_no
+        description: "Ticket number, key to fact_tickets"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fact_tickets')
+                field: ticket_no
+      - name: flight_id
+        description: "Flight id, key to fact_flights"
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fact_flights')
+                field: flight_id
+      - name: fare_conditions
+        description: "Travel class"
+      - name: amount
+        description: "Cost of the flight in the ticket"
+      - name: boarding_no
+        description: "Boarding pass number, null if the passenger did not check in yet"
+      - name: seat_no
+        description: "Seat number, null if the passenger did not check in yet"
+      - name: last_update_ticket_flight
+        description: "Last update time of the ticket flight in the source, used for the incremental load"
+      - name: last_update_boarding_pass
+        description: "Last update time of the boarding pass in the source, used for the incremental load"
+      - name: dbt_run_time
+        description: "Start time of the dbt run that loaded the row"

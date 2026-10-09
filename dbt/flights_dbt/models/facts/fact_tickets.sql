@@ -1,4 +1,12 @@
-{{ config(materialized='incremental',unique_key='ticket_no') }}
+{{ config(
+    materialized='incremental',
+    unique_key='ticket_no',
+    indexes=[
+        {'columns': ['ticket_no'], 'unique': True}
+       ,{'columns': ['book_ref']}
+       ,{'columns': ['date_key']}
+    ]
+) }}
 
 with bookings as(
   select *
@@ -6,18 +14,19 @@ with bookings as(
 )
 ,tickets as(
   select t.*
-        ,'{{run_started_at.strftime("%Y-%m-%d %H:%M:%S")}}'::timestamp as dbt_run_time
+        ,{{ dbt_run_time() }} as dbt_run_time
   from {{source('stg','tickets')}} t
 )
 
 select t.ticket_no
   	  ,t.book_ref
+  	  ,{{ date_key('b.book_date') }} as date_key
   	  ,b.book_date
   	  ,b.total_amount
   	  ,t.passenger_id
   	  ,t.passenger_name
-  	  ,(t.contact_data ->> 'phone') as phone
-  	  ,(t.contact_data ->> 'email') as email
+  	  ,{{ json_value('t.contact_data', 'phone') }} as phone
+  	  ,{{ json_value('t.contact_data', 'email') }} as email
   	  ,t.last_update as last_update_tickets
       ,t.dbt_run_time
 from tickets t

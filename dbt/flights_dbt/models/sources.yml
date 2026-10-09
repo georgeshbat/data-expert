@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: stg
+    description: "Raw flights_demo data: flights, tickets, bookings, airports, aircrafts and seats"
+    database: flights_demo
+    schema: stg
+    tables:
+      - name: aircrafts_data
+        description: "Aircraft models. model is a json with the name in english (en) and russian (ru)"
+      - name: seats
+        description: "Seats of every aircraft model and their fare conditions"
+      - name: airports_data
+        description: "Airports. airport_name and city are jsons with the name in english (en) and russian (ru)"
+      - name: flights
+        description: "Flights with scheduled and actual departure and arrival times"
+      - name: tickets
+        description: "Tickets. One ticket per passenger in a booking, contact_data is a json with phone and email"
+      - name: bookings
+        description: "Bookings. One booking can include several tickets"
+      - name: ticket_flights
+        description: "The flights that every ticket includes, with fare conditions and amount"
+      - name: boarding_passes
+        description: "Boarding passes issued at check-in for a ticket and a flight"

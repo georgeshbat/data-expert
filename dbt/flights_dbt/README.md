@@ -1,15 +1,37 @@
-Welcome to your new dbt project!
+# flights_dbt
 
-### Using the starter project
+dbt project that builds a data warehouse (schema `dwh`) from the `flights_demo` database (schema `stg`) in neon.
 
-Try running the following commands:
-- dbt run
-- dbt test
+## Models
 
+| Model | Type | Source tables |
+|---|---|---|
+| dim_airport | table | airports_data |
+| dim_aircraft | table | aircrafts_data + seats |
+| dim_date | table | generated |
+| fact_flights | incremental | flights |
+| fact_boarding_passes | incremental | ticket_flights + boarding_passes |
+| fact_tickets | incremental | tickets + bookings |
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+## Environments
+
+The profile `flights_demo` has two targets:
+
+- `dev` - neon branch `development` (default)
+- `prod` - neon branch `production`
+
+## Run
+
+```
+dbt deps
+dbt build                 # dev
+dbt build --target prod   # production
+```
+
+## What is used
+
+- Macros: `json_value`, `duration_hours`, `date_key`, `dbt_run_time`, `log_model`
+- dbt_utils: `generate_surrogate_key`, `unique_combination_of_columns`
+- Hooks: on-run-start / on-run-end (shd.dbt_logs), pre-hook / post-hook (shd.dbt_model_logs, -1 row in the dimensions)
+- Indexes on the keys of every model
+- Tests: generic tests in the schema.yml files and sql tests in the `tests` folder

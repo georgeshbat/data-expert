@@ -1,9 +1,17 @@
-{{ config(materialized='incremental',unique_key="ticket_no||'-'||flight_id") }}
+{{ config(
+    materialized='incremental',
+    unique_key='boarding_pass_key',
+    indexes=[
+        {'columns': ['boarding_pass_key'], 'unique': True}
+       ,{'columns': ['ticket_no']}
+       ,{'columns': ['flight_id']}
+    ]
+) }}
 
 
 with ticket_flights as(
   select t.*
-      	,'{{run_started_at.strftime("%Y-%m-%d %H:%M:%S")}}'::timestamp as dbt_run_time
+      	,{{ dbt_run_time() }} as dbt_run_time
   from {{source('stg','ticket_flights')}} t
 )
 , boarding_passes as (
@@ -11,7 +19,8 @@ with ticket_flights as(
   from {{source('stg','boarding_passes')}}
 )
 
-select t.ticket_no
+select {{ dbt_utils.generate_surrogate_key(['t.ticket_no', 't.flight_id']) }} as boarding_pass_key
+      ,t.ticket_no
   	  ,t.flight_id
   	  ,t.fare_conditions
   	  ,t.amount
