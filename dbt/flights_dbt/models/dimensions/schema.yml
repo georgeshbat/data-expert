@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: dim_aircraft
+    description: "Aircraft dimension. One row per seat in an aircraft model (aircrafts_data + seats), plus a -1 row for unknown aircraft"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - aircraft_code
+              - seat_no
+    columns:
+      - name: aircraft_code
+        description: "Aircraft model code, -1 for unknown"
+        data_tests:
+          - not_null
+      - name: model_english
+        description: "Aircraft model name in english, extracted from the model json"
+      - name: model_russian
+        description: "Aircraft model name in russian, extracted from the model json"
+      - name: range
+        description: "Maximum flight range in km"
+      - name: range_desc
+        description: "high when range is above 5600, otherwise low"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['high', 'low', 'NA']
+      - name: seat_no
+        description: "Seat number in the aircraft"
+      - name: fare_conditions
+        description: "Travel class of the seat"
+      - name: dbt_run_time
+        description: "Start time of the dbt run that built the row"
+
+  - name: dim_airport
+    description: "Airport dimension. One row per airport, plus a -1 row for unknown airport"
+    columns:
+      - name: airport_code
+        description: "The primary key for this table, -1 for unknown"
+        data_tests:
+          - unique
+          - not_null
+      - name: airport_name_english
+        description: "Airport name in english, extracted from the airport_name json"
+      - name: airport_name_russian
+        description: "Airport name in russian, extracted from the airport_name json"
+      - name: city_english
+        description: "City name in english, extracted from the city json"
+      - name: city_russian
+        description: "City name in russian, extracted from the city json"
+      - name: coordinates
+        description: "Airport coordinates (longitude, latitude)"
+      - name: timezone
+        description: "Airport time zone"
+      - name: dbt_run_time
+        description: "Start time of the dbt run that built the row"
+      - name: last_update
+        description: "Last update time of the row in the source"
+
+  - name: dim_date
+    description: "Date dimension. One row per day from 2000-01-01 until today"
+    columns:
+        - name: date_dim_id
+          description: "The primary key for this table, in format YYYYMMDD"
+          data_tests:
+              - unique
+              - not_null
+        - name: date_key
+          description: "The date itself"
